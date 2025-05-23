@@ -21,7 +21,7 @@ A modern, blockchain-powered certificate verification system built with the MERN
 - **React Router** for navigation
 - **Lucide React** for icons
 
-### Backend (To Be Implemented)
+### Backend
 - **Node.js** with Express.js
 - **MongoDB** for certificate metadata storage
 - **Mongoose** ODM for database operations
@@ -30,9 +30,8 @@ A modern, blockchain-powered certificate verification system built with the MERN
 
 ### Blockchain
 - **Smart Contracts** for certificate storage
-- **Web3.js/Ethers.js** for blockchain interaction
+- **Ethers.js** for blockchain interaction
 - **MetaMask** wallet integration
-- **IPFS** for certificate file storage
 
 ## 📦 Installation & Setup
 
@@ -42,7 +41,20 @@ A modern, blockchain-powered certificate verification system built with the MERN
 - MongoDB (local or cloud instance)
 - MetaMask browser extension
 
-### Frontend Setup (Current Implementation)
+### MongoDB Setup on Mac M2
+```bash
+# Install MongoDB Community Edition
+brew tap mongodb/brew
+brew install mongodb-community@6.0
+
+# Start MongoDB service
+brew services start mongodb/brew/mongodb-community@6.0
+
+# Verify MongoDB is running
+brew services list | grep mongodb
+```
+
+### Frontend Setup
 
 1. **Clone the repository**
    ```bash
@@ -50,156 +62,148 @@ A modern, blockchain-powered certificate verification system built with the MERN
    cd decertify
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies**
    ```bash
    npm install
    ```
 
-3. **Start the development server**
+3. **Start the frontend development server**
    ```bash
    npm run dev
    ```
 
 4. **Open in browser**
    ```
-   http://localhost:8080
+   http://localhost:5173
    ```
 
-### Backend Setup (Coming Next)
+### Backend Setup
 
-1. **MongoDB Setup**
+1. **Install backend dependencies**
    ```bash
-   # For local MongoDB installation on Mac M2
-   brew tap mongodb/brew
-   brew install mongodb-community
-   brew services start mongodb/brew/mongodb-community
+   cd backend
+   npm install
    ```
 
-2. **Environment Variables**
-   Create a `.env` file in the backend directory:
+2. **Configure .env file**
+   Create or modify the `.env` file in the backend directory:
    ```env
+   PORT=5000
+   NODE_ENV=development
    MONGODB_URI=mongodb://localhost:27017/decertify
-   JWT_SECRET=your_jwt_secret_here
+   JWT_SECRET=your_jwt_secret_123456789
    BLOCKCHAIN_NETWORK=polygon-mumbai
-   INFURA_PROJECT_ID=your_infura_project_id
-   PRIVATE_KEY=your_wallet_private_key
+   CONTRACT_ADDRESS=0x123456789abcdef123456789abcdef123456789a
+   # Optional for production:
+   # INFURA_PROJECT_ID=your_infura_project_id
+   # PRIVATE_KEY=your_wallet_private_key
    ```
 
-3. **Smart Contract Deployment**
+3. **Start the backend server**
    ```bash
-   # Deploy to testnet (Polygon Mumbai recommended)
-   npm run deploy:testnet
+   npm run dev
    ```
 
-## 🎯 Current Implementation Status
+### Smart Contract Deployment (Optional)
 
-### ✅ Completed
-- [x] Modern React frontend with TypeScript
-- [x] Responsive design with Tailwind CSS
-- [x] Certificate issuing interface
-- [x] Certificate verification portal
-- [x] Landing page with feature showcase
-- [x] Navigation and routing setup
-- [x] UI components and styling
-- [x] Demo functionality for testing
+For full blockchain functionality, deploy the smart contract to a testnet:
 
-### 🚧 In Progress / Next Steps
-- [ ] Backend API development (Express.js + Node.js)
-- [ ] MongoDB integration and schema design
-- [ ] Smart contract development and deployment
-- [ ] Blockchain integration (Web3/Ethers.js)
-- [ ] Wallet connection (MetaMask)
-- [ ] Authentication system (JWT)
-- [ ] IPFS integration for file storage
-- [ ] Real-time notifications
-- [ ] Certificate template system
-- [ ] Bulk certificate issuance
-- [ ] Analytics dashboard
+1. **Deploy using Remix (Easiest Method)**
+   - Go to [Remix IDE](https://remix.ethereum.org/)
+   - Create a new file called `CertificateVerification.sol`
+   - Copy the contract code from `backend/contracts/CertificateVerification.sol`
+   - Compile the contract
+   - Connect MetaMask to Polygon Mumbai testnet
+   - Deploy the contract
+   - Copy the deployed contract address to your `.env` file
 
-## 🎨 Design System
+2. **Alternative: Deploy using script (Requires wallet private key)**
+   ```bash
+   cd backend
+   npm run deploy-contract
+   ```
 
-### Color Palette
-- **Primary**: Deep Navy (#1e293b)
-- **Accent**: Teal (#0d9488)
-- **Highlight**: Gold (#f59e0b)
-- **Background**: Gradient from slate-900 to blue-900
+## 🧭 Using the Application
 
-### Typography
-- **Headings**: Inter/System fonts, bold weights
-- **Body**: Clean, readable fonts with proper hierarchy
-- **Code**: Monospace fonts for hashes and IDs
+### User Registration & Login
+1. Register as an Issuer, Recipient, or Verifier
+2. Connect your MetaMask wallet (required for Issuers)
 
-## 🔧 Development Guide
+### Certificate Issuance
+1. Navigate to the Issue page
+2. Fill in the certificate details
+3. Click "Mint Certificate" to store on blockchain
 
-### Project Structure
-```
-src/
-├── components/          # Reusable UI components
-│   ├── ui/             # Shadcn UI components
-│   ├── CertificateIssuer.tsx
-│   └── CertificateVerifier.tsx
-├── pages/              # Route components
-│   ├── Index.tsx       # Landing page
-│   ├── Issue.tsx       # Certificate issuing
-│   └── Verify.tsx      # Certificate verification
-├── hooks/              # Custom React hooks
-├── lib/                # Utility functions
-└── types/              # TypeScript type definitions
-```
+### Certificate Verification
+1. Navigate to the Verify page
+2. Enter a certificate ID, blockchain hash, or recipient name
+3. View the verification results
 
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+## 🔑 Wallet Connection
 
-## 🧪 Testing the Demo
+**Is wallet connection required?**
 
-The current implementation includes demo functionality. Try these features:
+- **For Issuers:** Yes, wallet connection is required to sign blockchain transactions when issuing certificates.
+- **For Verifiers:** No, wallet connection is not required for verification.
+- **For Recipients:** Optional, can be used to manage received certificates.
 
-1. **Navigate to Certificate Verification** (`/verify`)
-2. **Test with sample data**:
-   - Certificate ID: `CERT-2024-001`
-   - Recipient: `John Doe`
-   - Blockchain Hash: `0x1234567890abcdef`
+The system uses MetaMask for wallet connection, which provides:
+- Secure transaction signing
+- Blockchain account management
+- Network switching (for different testnets/mainnets)
 
-3. **Issue a new certificate** (`/issue`)
-   - Fill in the form and click "Mint Certificate"
-   - Observe the blockchain minting simulation
+## 📝 Development Notes
 
-## 🔮 Roadmap
+### API Endpoints
 
-### Phase 1: Core Backend (Next Sprint)
-- Express.js API setup
-- MongoDB integration
-- Basic CRUD operations
-- Authentication system
+#### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `PUT /api/auth/wallet` - Update wallet address
+- `GET /api/auth/me` - Get current user info
 
-### Phase 2: Blockchain Integration
-- Smart contract development
-- Testnet deployment (Polygon Mumbai)
-- Web3 integration
-- Wallet connectivity
+#### Certificates
+- `POST /api/certificates/issue` - Issue new certificate
+- `POST /api/certificates/verify` - Verify certificate
+- `GET /api/certificates/issued` - Get certificates issued by user
 
-### Phase 3: Advanced Features
-- IPFS file storage
-- Certificate templates
-- Bulk operations
-- Analytics dashboard
+### Database Schema
 
-### Phase 4: Production Ready
-- Mainnet deployment
-- Security audits
-- Performance optimization
-- Documentation
+#### Certificate Schema
+- `recipientName` (String): Full name of the recipient
+- `recipientEmail` (String): Email address of the recipient
+- `certificateTitle` (String): Title/name of the certificate
+- `description` (String): Detailed description
+- `issuerName` (String): Name of the issuing organization
+- `issuerAddress` (String): Blockchain address of the issuer
+- `issueDate` (Date): When the certificate was issued
+- `expiryDate` (Date, optional): When the certificate expires
+- `blockchainHash` (String): Certificate hash stored on blockchain
+- `transactionHash` (String): Blockchain transaction hash
+- `status` (String): Current status (valid, expired, revoked)
 
-## 🤝 Contributing
+## 🔧 Troubleshooting
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Common Issues
+
+#### MongoDB Connection Errors
+- Ensure MongoDB is running: `brew services list | grep mongodb`
+- Restart if needed: `brew services restart mongodb/brew/mongodb-community@6.0`
+- Check connection string in `.env` file
+
+#### Blockchain Integration Issues
+- Ensure MetaMask is installed and connected to the correct network
+- For Mumbai testnet, add network to MetaMask:
+  - Network Name: Mumbai Testnet
+  - RPC URL: https://rpc-mumbai.maticvigil.com/
+  - Chain ID: 80001
+  - Currency Symbol: MATIC
+  - Block Explorer: https://mumbai.polygonscan.com/
+
+#### Backend API Connection
+- Ensure backend server is running on port 5000
+- Check for CORS issues in browser console
+- Verify API endpoints in frontend code match backend routes
 
 ## 📄 License
 
@@ -213,4 +217,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Next Steps**: Ready to implement the full MERN stack backend with MongoDB and blockchain integration. The frontend foundation is solid and ready for backend connectivity!
+© 2025 DeCertify - Secure, Decentralized Certificate Verification

@@ -7,68 +7,79 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Search, CheckCircle, XCircle, Shield, FileText, Calendar, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCertificates } from '@/hooks/useCertificates';
 
-interface CertificateData {
-  id: string;
+interface Certificate {
+  _id: string;
   recipientName: string;
+  recipientEmail: string;
   certificateTitle: string;
   description: string;
   issuerName: string;
+  issuerAddress: string;
   issueDate: string;
-  expiryDate: string;
+  expiryDate?: string;
   blockchainHash: string;
+  transactionHash: string;
   status: 'valid' | 'expired' | 'revoked';
 }
 
 const CertificateVerifier = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [certificate, setCertificate] = useState<CertificateData | null>(null);
+  const { 
+    verifyCertificate, 
+    verifyingCertificate, 
+    verificationResult, 
+    resetVerificationResult,
+    error 
+  } = useCertificates();
   const [searchAttempted, setSearchAttempted] = useState(false);
   const { toast } = useToast();
-
-  // Mock certificate data for demo
-  const mockCertificate: CertificateData = {
-    id: 'CERT-2024-001',
-    recipientName: 'John Doe',
-    certificateTitle: 'Bachelor of Computer Science',
-    description: 'Successfully completed the Bachelor of Computer Science program with distinction in Software Engineering and Artificial Intelligence.',
-    issuerName: 'University of Technology',
-    issueDate: '2024-05-15',
-    expiryDate: '',
-    blockchainHash: '0x1234567890abcdef1234567890abcdef12345678',
-    status: 'valid'
-  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-
-    setIsLoading(true);
-    setSearchAttempted(true);
     
-    // Simulate blockchain verification
-    setTimeout(() => {
-      setIsLoading(false);
+    setSearchAttempted(true);
+    resetVerificationResult();
+    
+    try {
+      // Determine what type of search this is
+      let searchData = {};
       
-      // For demo purposes, show certificate if search matches mock ID
-      if (searchQuery.toLowerCase().includes('cert-2024-001') || 
-          searchQuery.toLowerCase().includes('john') ||
-          searchQuery.includes('0x1234567890abcdef')) {
-        setCertificate(mockCertificate);
+      if (searchQuery.startsWith('0x')) {
+        // Looks like a blockchain hash
+        searchData = { blockchainHash: searchQuery };
+      } else if (/^[0-9a-f]{24}$/i.test(searchQuery)) {
+        // Looks like a MongoDB ObjectId
+        searchData = { certificateId: searchQuery };
+      } else {
+        // Treat as recipient name
+        searchData = { recipientName: searchQuery };
+      }
+      
+      const result = await verifyCertificate(searchData);
+      
+      if (result.success) {
         toast({
           title: "Certificate Found!",
           description: "Valid certificate found on the blockchain.",
         });
       } else {
-        setCertificate(null);
         toast({
           title: "Certificate Not Found",
-          description: "No certificate found with the provided identifier.",
+          description: result.message || "No certificate found with the provided identifier.",
           variant: "destructive"
         });
       }
-    }, 2000);
+    } catch (err) {
+      console.error('Error verifying certificate:', err);
+      toast({
+        title: "Verification Error",
+        description: "An error occurred during verification. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -88,6 +99,8 @@ const CertificateVerifier = () => {
       default: return <FileText className="h-4 w-4" />;
     }
   };
+
+  const certificate = verificationResult?.certificate;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 py-12">
@@ -124,10 +137,10 @@ const CertificateVerifier = () => {
                 </div>
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={verifyingCertificate}
                   className="w-full bg-teal-600 hover:bg-teal-700 text-white"
                 >
-                  {isLoading ? (
+                  {verifyingCertificate ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Searching Blockchain...
@@ -161,6 +174,16 @@ const CertificateVerifier = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {error && (
+                  <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-4 mb-6">
+                    <div className="flex items-center text-red-400 mb-2">
+                      <XCircle className="mr-2 h-5 w-5" />
+                      <span className="font-semibold">Verification Error</span>
+                    </div>
+                    <p className="text-red-200 text-sm">{error}</p>
+                  </div>
+                )}
+                
                 {certificate ? (
                   <div className="space-y-6">
                     {/* Certificate Details */}
@@ -168,7 +191,7 @@ const CertificateVerifier = () => {
                       <div className="space-y-4">
                         <div>
                           <Label className="text-white/70 text-sm">Certificate ID</Label>
-                          <p className="text-white font-mono">{certificate.id}</p>
+                          <p className="text-white font-mono">{certificate._id}</p>
                         </div>
                         <div>
                           <Label className="text-white/70 text-sm">Recipient</Label>
@@ -246,20 +269,20 @@ const CertificateVerifier = () => {
           {/* Demo Instructions */}
           <Card className="bg-white/5 backdrop-blur-md border-white/10 mt-8">
             <CardContent className="p-6">
-              <h3 className="text-white font-semibold mb-4">Try the Demo</h3>
-              <p className="text-white/70 mb-4">Use these sample identifiers to test the verification system:</p>
+              <h3 className="text-white font-semibold mb-4">How to Verify Certificates</h3>
+              <p className="text-white/70 mb-4">You can verify certificates using any of these identifiers:</p>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center text-white/60">
                   <span className="w-32">Certificate ID:</span>
-                  <code className="bg-white/10 px-2 py-1 rounded text-teal-300">CERT-2024-001</code>
+                  <code className="bg-white/10 px-2 py-1 rounded text-teal-300">MongoDB ObjectId</code>
                 </div>
                 <div className="flex items-center text-white/60">
-                  <span className="w-32">Recipient:</span>
+                  <span className="w-32">Recipient Name:</span>
                   <code className="bg-white/10 px-2 py-1 rounded text-teal-300">John Doe</code>
                 </div>
                 <div className="flex items-center text-white/60">
                   <span className="w-32">Blockchain Hash:</span>
-                  <code className="bg-white/10 px-2 py-1 rounded text-teal-300">0x1234567890abcdef</code>
+                  <code className="bg-white/10 px-2 py-1 rounded text-teal-300">0x1234567890abcdef...</code>
                 </div>
               </div>
             </CardContent>

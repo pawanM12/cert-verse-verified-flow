@@ -7,6 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, FileText, Shield, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCertificates } from '@/hooks/useCertificates';
+import { useWallet } from '@/context/WalletContext';
+import { useAuth } from '@/context/AuthContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const CertificateIssuer = () => {
   const [formData, setFormData] = useState({
@@ -15,11 +19,16 @@ const CertificateIssuer = () => {
     certificateTitle: '',
     description: '',
     issuerName: '',
-    issueDate: '',
+    issueDate: new Date().toISOString().split('T')[0],
     expiryDate: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const { issueCertificate, issuingCertificate, error } = useCertificates();
+  const { isConnected, address } = useWallet();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const [success, setSuccess] = useState<boolean>(false);
+  const [certificateHash, setCertificateHash] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -31,27 +40,72 @@ const CertificateIssuer = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setSuccess(false);
+    setCertificateHash(null);
     
-    // Simulate blockchain minting process
-    setTimeout(() => {
-      setIsLoading(false);
+    if (!user) {
       toast({
-        title: "Certificate Minted Successfully!",
-        description: "Your certificate has been stored on the blockchain.",
+        title: "Authentication Required",
+        description: "You must be logged in to issue certificates.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!isConnected) {
+      toast({
+        title: "Wallet Connection Required",
+        description: "Please connect your blockchain wallet to issue certificates.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Auto-populate issuer name if not provided
+      const issuerName = formData.issuerName || user.name;
+      
+      const result = await issueCertificate({
+        ...formData,
+        issuerName,
       });
       
-      // Reset form
-      setFormData({
-        recipientName: '',
-        recipientEmail: '',
-        certificateTitle: '',
-        description: '',
-        issuerName: '',
-        issueDate: '',
-        expiryDate: ''
+      if (result.success) {
+        toast({
+          title: "Certificate Issued Successfully!",
+          description: "Your certificate has been stored on the blockchain.",
+        });
+        
+        setSuccess(true);
+        if (result.certificate && result.certificate.blockchainHash) {
+          setCertificateHash(result.certificate.blockchainHash);
+        }
+        
+        // Reset form
+        setFormData({
+          recipientName: '',
+          recipientEmail: '',
+          certificateTitle: '',
+          description: '',
+          issuerName: '',
+          issueDate: new Date().toISOString().split('T')[0],
+          expiryDate: ''
+        });
+      } else {
+        toast({
+          title: "Certificate Issuance Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error issuing certificate:', error);
+      toast({
+        title: "An error occurred",
+        description: "Failed to issue certificate. Please try again.",
+        variant: "destructive",
       });
-    }, 3000);
+    }
   };
 
   return (
@@ -62,6 +116,36 @@ const CertificateIssuer = () => {
             <h1 className="text-4xl font-bold text-white mb-4">Issue New Certificate</h1>
             <p className="text-xl text-white/70">Create and mint a new certificate on the blockchain</p>
           </div>
+
+          {/* Wallet Status */}
+          {!isConnected && (
+            <Alert className="mb-6 bg-yellow-500/10 border-yellow-600/30">
+              <AlertTitle className="text-yellow-300">Wallet Not Connected</AlertTitle>
+              <AlertDescription className="text-yellow-100">
+                Please connect your blockchain wallet to issue certificates.
+                You can connect your wallet from the Dashboard.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {error && (
+            <Alert className="mb-6 bg-red-500/10 border-red-600/30">
+              <AlertTitle className="text-red-300">Error</AlertTitle>
+              <AlertDescription className="text-red-100">{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {success && certificateHash && (
+            <Alert className="mb-6 bg-green-500/10 border-green-600/30">
+              <AlertTitle className="text-green-300">Certificate Issued Successfully!</AlertTitle>
+              <AlertDescription className="text-green-100">
+                <p>Your certificate has been successfully stored on the blockchain.</p>
+                <p className="mt-2 font-mono text-xs break-all bg-green-900/20 p-2 rounded">
+                  Certificate Hash: {certificateHash}
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Card className="bg-white/10 backdrop-blur-md border-white/20">
             <CardHeader>
@@ -137,10 +221,12 @@ const CertificateIssuer = () => {
                       name="issuerName"
                       value={formData.issuerName}
                       onChange={handleInputChange}
-                      placeholder="University/Organization name"
+                      placeholder={user?.name || "University/Organization name"}
                       className="bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                      required
                     />
+                    <p className="text-xs text-white/50">
+                      Leave blank to use your account name ({user?.name})
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="issueDate" className="text-white">Issue Date</Label>
@@ -178,10 +264,10 @@ const CertificateIssuer = () => {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={issuingCertificate || !isConnected}
                     className="bg-teal-600 hover:bg-teal-700 text-white"
                   >
-                    {isLoading ? (
+                    {issuingCertificate ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Minting on Blockchain...

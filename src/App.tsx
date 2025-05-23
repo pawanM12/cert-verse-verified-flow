@@ -8,23 +8,39 @@ import Index from "./pages/Index";
 import Issue from "./pages/Issue";
 import Verify from "./pages/Verify";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./context/AuthContext";
+import { WalletProvider } from "./context/WalletContext";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import PrivateRoute from "./components/PrivateRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/issue" element={<Issue />} />
-          <Route path="/verify" element={<Verify />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <WalletProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/verify" element={<Verify />} />
+              
+              {/* Protected routes */}
+              <Route path="/issue" element={<PrivateRoute element={<Issue />} />} />
+              <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </WalletProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
