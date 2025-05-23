@@ -1,8 +1,14 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { ethers } from 'ethers';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from './AuthContext';
+
+// Define MetaMask ethereum provider type
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 interface WalletContextType {
   address: string | null;
