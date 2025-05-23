@@ -1,73 +1,216 @@
-# Welcome to your Lovable project
 
-## Project info
+# DeCertify - Decentralized Certificate Verification System
 
-**URL**: https://lovable.dev/projects/de9d7ac4-7956-4a88-b625-a5f892d96c0e
+A modern, blockchain-powered certificate verification system built with the MERN stack that ensures immutable, instantly verifiable digital credentials.
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+- **Decentralized Verification**: Certificates stored immutably on blockchain
+- **Instant Verification**: Verify any certificate in seconds
+- **User-Friendly Interface**: Modern, responsive React frontend
+- **Secure Storage**: MongoDB database with blockchain integration
+- **Multi-Role Support**: Support for issuers, recipients, and verifiers
+- **Real-time Status**: Live transaction and verification status updates
 
-**Use Lovable**
+## 🛠 Technology Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/de9d7ac4-7956-4a88-b625-a5f892d96c0e) and start prompting.
+### Frontend
+- **React 18** with TypeScript
+- **Tailwind CSS** for styling
+- **Shadcn/UI** component library
+- **React Router** for navigation
+- **Lucide React** for icons
 
-Changes made via Lovable will be committed automatically to this repo.
+### Backend (To Be Implemented)
+- **Node.js** with Express.js
+- **MongoDB** for certificate metadata storage
+- **Mongoose** ODM for database operations
+- **JWT** authentication
+- **Blockchain integration** (Ethereum/Polygon)
 
-**Use your preferred IDE**
+### Blockchain
+- **Smart Contracts** for certificate storage
+- **Web3.js/Ethers.js** for blockchain interaction
+- **MetaMask** wallet integration
+- **IPFS** for certificate file storage
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📦 Installation & Setup
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- MongoDB (local or cloud instance)
+- MetaMask browser extension
 
-Follow these steps:
+### Frontend Setup (Current Implementation)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd decertify
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+4. **Open in browser**
+   ```
+   http://localhost:8080
+   ```
+
+### Backend Setup (Coming Next)
+
+1. **MongoDB Setup**
+   ```bash
+   # For local MongoDB installation on Mac M2
+   brew tap mongodb/brew
+   brew install mongodb-community
+   brew services start mongodb/brew/mongodb-community
+   ```
+
+2. **Environment Variables**
+   Create a `.env` file in the backend directory:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/decertify
+   JWT_SECRET=your_jwt_secret_here
+   BLOCKCHAIN_NETWORK=polygon-mumbai
+   INFURA_PROJECT_ID=your_infura_project_id
+   PRIVATE_KEY=your_wallet_private_key
+   ```
+
+3. **Smart Contract Deployment**
+   ```bash
+   # Deploy to testnet (Polygon Mumbai recommended)
+   npm run deploy:testnet
+   ```
+
+## 🎯 Current Implementation Status
+
+### ✅ Completed
+- [x] Modern React frontend with TypeScript
+- [x] Responsive design with Tailwind CSS
+- [x] Certificate issuing interface
+- [x] Certificate verification portal
+- [x] Landing page with feature showcase
+- [x] Navigation and routing setup
+- [x] UI components and styling
+- [x] Demo functionality for testing
+
+### 🚧 In Progress / Next Steps
+- [ ] Backend API development (Express.js + Node.js)
+- [ ] MongoDB integration and schema design
+- [ ] Smart contract development and deployment
+- [ ] Blockchain integration (Web3/Ethers.js)
+- [ ] Wallet connection (MetaMask)
+- [ ] Authentication system (JWT)
+- [ ] IPFS integration for file storage
+- [ ] Real-time notifications
+- [ ] Certificate template system
+- [ ] Bulk certificate issuance
+- [ ] Analytics dashboard
+
+## 🎨 Design System
+
+### Color Palette
+- **Primary**: Deep Navy (#1e293b)
+- **Accent**: Teal (#0d9488)
+- **Highlight**: Gold (#f59e0b)
+- **Background**: Gradient from slate-900 to blue-900
+
+### Typography
+- **Headings**: Inter/System fonts, bold weights
+- **Body**: Clean, readable fonts with proper hierarchy
+- **Code**: Monospace fonts for hashes and IDs
+
+## 🔧 Development Guide
+
+### Project Structure
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Shadcn UI components
+│   ├── CertificateIssuer.tsx
+│   └── CertificateVerifier.tsx
+├── pages/              # Route components
+│   ├── Index.tsx       # Landing page
+│   ├── Issue.tsx       # Certificate issuing
+│   └── Verify.tsx      # Certificate verification
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions
+└── types/              # TypeScript type definitions
 ```
 
-**Edit a file directly in GitHub**
+### Available Scripts
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🧪 Testing the Demo
 
-**Use GitHub Codespaces**
+The current implementation includes demo functionality. Try these features:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. **Navigate to Certificate Verification** (`/verify`)
+2. **Test with sample data**:
+   - Certificate ID: `CERT-2024-001`
+   - Recipient: `John Doe`
+   - Blockchain Hash: `0x1234567890abcdef`
 
-## What technologies are used for this project?
+3. **Issue a new certificate** (`/issue`)
+   - Fill in the form and click "Mint Certificate"
+   - Observe the blockchain minting simulation
 
-This project is built with:
+## 🔮 Roadmap
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Phase 1: Core Backend (Next Sprint)
+- Express.js API setup
+- MongoDB integration
+- Basic CRUD operations
+- Authentication system
 
-## How can I deploy this project?
+### Phase 2: Blockchain Integration
+- Smart contract development
+- Testnet deployment (Polygon Mumbai)
+- Web3 integration
+- Wallet connectivity
 
-Simply open [Lovable](https://lovable.dev/projects/de9d7ac4-7956-4a88-b625-a5f892d96c0e) and click on Share -> Publish.
+### Phase 3: Advanced Features
+- IPFS file storage
+- Certificate templates
+- Bulk operations
+- Analytics dashboard
 
-## Can I connect a custom domain to my Lovable project?
+### Phase 4: Production Ready
+- Mainnet deployment
+- Security audits
+- Performance optimization
+- Documentation
 
-Yes, you can!
+## 🤝 Contributing
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by the original [DeCertify project](https://github.com/saRvaGnyA/decertify)
+- Built with modern web technologies and best practices
+- Designed for the future of digital credential verification
+
+---
+
+**Next Steps**: Ready to implement the full MERN stack backend with MongoDB and blockchain integration. The frontend foundation is solid and ready for backend connectivity!
